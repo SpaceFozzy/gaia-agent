@@ -12,5 +12,8 @@ wheels/
 # Application output
 answers
 
+# Dataset cache
+downloaded_files
+
 # Notes
 todo.txt
