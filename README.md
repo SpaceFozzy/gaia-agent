@@ -1,6 +1,14 @@
 # GAIA Agent
 
-This project is a [LangGraph](https://www.langchain.com/langgraph) agent that attempts to answer questions from the [GAIA dataset](https://huggingface.co/datasets/gaia-benchmark/GAIA) using Claude Sonnet 4 with a collection of tools.
+This project is a [LangGraph](https://www.langchain.com/langgraph) agent that answers questions from the [GAIA dataset](https://huggingface.co/datasets/gaia-benchmark/GAIA) using Claude Sonnet 4 with a collection of tools. It currently uses web search and math functions for precise calculations.
+
+## Results
+
+I began this as the final project of the [Hugging Face Agents Course](https://huggingface.co/learn/agents-course/en/unit0/introduction). To pass the course, the agent needed to correctly answer 30% of a sample of 20 Level 1 questions. It scored 11/20, with two answers essentially timing out. On the class leaderboard of 4138, it scored the 1065th place (i.e. the top 25%) 🎉 
+
+I bet we can do better!
+
+Five of the questions the agent could not answer because it doesn't currently support reading files like images, pdf, mp3, etc. So this is next on the TODO list.
 
 ## Getting Started
 
