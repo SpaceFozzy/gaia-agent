@@ -1,0 +1,14 @@
+[project]
+name = "gaia-agent"
+version = "0.1.0"
+description = "An AI agent built to be evaluated on the gaia benchmark"
+readme = "README.md"
+requires-python = ">=3.13.4"
+dependencies = [
+    "datasets>=3.6.0",
+    "langchain>=0.3.25",
+    "langchain-anthropic>=0.3.15",
+    "langchain-tavily>=0.2.3",
+    "langgraph>=0.4.8",
+    "pydantic>=2.11.7",
+]
