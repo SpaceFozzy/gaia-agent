@@ -15,6 +15,8 @@ from langgraph.graph.message import add_messages
 from langgraph.types import Command
 from langgraph.prebuilt import InjectedState, ToolNode
 
+from utils.file_extractors import FileExtractor
+
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +155,17 @@ class GaiaAgent:
             return state
 
     async def answer_question(self, question):
-        if question["file_name"]:
-            return "I don't know - I can't handle files yet!"
+        file_contents = None
         question_text = question["question"]
+        if question["file_name"]:
+            try:
+                file_extractor = FileExtractor(question["file_name"])
+                file_contents = file_extractor()
+                question_text += "\n\nDocument contents:\n\n"
+                question_text += file_contents
+            except Exception as e:
+                logger.error(f"Error: {e}")
+                return "I don't know - I can't handle this file!"
 
         logger.debug("Initializing agent state to answer question...")
         system_prompt = """
