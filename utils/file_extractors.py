@@ -4,10 +4,12 @@ from huggingface_hub import snapshot_download
 from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.table import Table
+from openpyxl import load_workbook
+from openpyxl.styles.colors import RGB
 
 logger = logging.getLogger(__name__)
 
-supported_file_types = ["docx"]
+supported_file_types = ["docx", "xlsx"]
 
 
 class FileExtractor:
@@ -49,8 +51,8 @@ class FileExtractor:
             elif child.tag.endswith("tbl"):
                 yield Table(child, parent)
 
-    def dump_doc(self, path):
-        doc = Document(path)
+    def docx_to_text(self):
+        doc = Document(self.file_path)
         lines = []
         for block in self.iter_block_items(doc):
             if isinstance(block, Paragraph):
@@ -68,11 +70,51 @@ class FileExtractor:
                     lines.append("| " + " | ".join(cells) + " |")
         return "\n".join(lines)
 
+    def xlsx_to_text(self):
+        wb = load_workbook(self.file_path, data_only=True)
+        lines = []
+        for sheet in wb.sheetnames:
+            ws = wb[sheet]
+            lines.append(f"# Sheet: {sheet}")
+            for row in ws.iter_rows(values_only=False):
+                if all(cell is None for cell in row):
+                    continue
+
+                row_text = ""
+                for cell in row:
+                    if cell is not None:
+                        row_text += str(cell.value)
+                        # If the cell had a color other than the default background, include
+                        # it with the cell value to the LLM can be aware.
+                        # Sometimes the colors are an RGB class which we will ignore for now.
+                        if cell.fill.start_color.rgb != "00000000" and not isinstance(
+                            cell.fill.start_color.rgb, RGB
+                        ):
+                            row_text += f" (#{cell.fill.start_color.rgb})"
+                        row_text += " | "
+                    else:
+                        row_text += " | "
+
+                lines.append(row_text)
+        return "\n".join(lines)
+
+    def extract_text(self):
+        extension = self.get_extension()
+        match extension:
+            case "docx":
+                return self.docx_to_text()
+            case "xlsx":
+                return self.xlsx_to_text()
+            case _:
+                raise Exception(
+                    f"Attempted to extract from unsupported extension {extension}"
+                )
+
     def __call__(self):
         logger.info(f"Extracting file contents from {self.file_name}...")
         if os.path.exists(self.file_path):
             logger.info("File exists on disk.")
-            text = self.dump_doc(self.file_path)
+            text = self.extract_text()
             logger.info("Text extracted from file.")
             return text
         else:
