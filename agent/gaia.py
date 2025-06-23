@@ -1,9 +1,10 @@
 import logging
 import asyncio
 import time
+import math
 
 from pydantic import BaseModel
-from typing import Annotated
+from typing import Annotated, List
 
 from langchain_anthropic import ChatAnthropic, convert_to_anthropic_tool
 from langchain_core.messages import ToolMessage
@@ -22,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 llm = ChatAnthropic(
     model_name="claude-sonnet-4-20250514",
-    max_tokens=5000,
+    max_tokens=10000,
     timeout=None,
-    thinking={"type": "enabled", "budget_tokens": 4000},
+    thinking={"type": "enabled", "budget_tokens": 8000},
     model_kwargs={
         "extra_headers": {"anthropic-beta": "token-efficient-tools-2025-02-19"}
     },
@@ -42,6 +43,13 @@ def add(x: float, y: float):
     """This function adds two numbers."""
     logger.info(f"Added {x} and {y}")
     return x + y
+
+
+@tool
+def sum_array(numbers: List[float]):
+    """This function sums an array of numbers."""
+    logger.info(f"Summing {numbers}")
+    return math.fsum(numbers)
 
 
 @tool
@@ -97,7 +105,7 @@ def submit_final_answer(
 
 
 tavily = TavilySearch(max_results=2)
-tools = [add, subtract, multiply, divide, tavily, submit_final_answer]
+tools = [add, sum_array, subtract, multiply, divide, tavily, submit_final_answer]
 anthropic_tools = []
 for raw_tool in tools:
     anthropic_tool = convert_to_anthropic_tool(raw_tool)
@@ -172,6 +180,7 @@ class GaiaAgent:
         You are a general AI assistant. I will ask you a question. Report your thoughts, and finish your answer by calling the submit_final_answer tool. YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings. If you are asked for a number, don't use comma to write your number neither use units such as $ or percent sign unless specified otherwise. If you are asked for a string, don't use articles, neither abbreviations (e.g. for cities), and write the digits in plain text unless specified otherwise. If you are asked for a comma separated list, apply the above rules depending of whether the element to be put in the list is a number or a string.
         To operate effectively, always remember:
             1. Before using any math tools for operations, make sure you have thought about the math problem sufficiently and stated the equation that you will solve. Plan the equation first, then use the math tools to solve it precisely.
+            2.Pay careful attention to the required output format of your answer and be sure to adjust your answer accordingly.
         """
         initial_state = {
             "question": question,
