@@ -69,7 +69,7 @@ class FileExtractor:
         return "\n".join(lines)
 
     def __call__(self):
-        logger.info("Extracting file contents...")
+        logger.info(f"Extracting file contents from {self.file_name}...")
         if os.path.exists(self.file_path):
             logger.info("File exists on disk.")
             text = self.dump_doc(self.file_path)
