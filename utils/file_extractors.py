@@ -9,7 +9,7 @@ from openpyxl.styles.colors import RGB
 
 logger = logging.getLogger(__name__)
 
-supported_file_types = ["docx", "xlsx"]
+supported_file_types = ["docx", "xlsx", "py"]
 
 
 class FileExtractor:
@@ -98,6 +98,11 @@ class FileExtractor:
                 lines.append(row_text)
         return "\n".join(lines)
 
+    def raw_file_to_text(self):
+        with open(self.file_path, mode="r", encoding="utf-8") as file:
+            contents = file.read()
+            return contents
+
     def extract_text(self):
         extension = self.get_extension()
         match extension:
@@ -105,6 +110,8 @@ class FileExtractor:
                 return self.docx_to_text()
             case "xlsx":
                 return self.xlsx_to_text()
+            case "py":
+                return self.raw_file_to_text()
             case _:
                 raise Exception(
                     f"Attempted to extract from unsupported extension {extension}"
