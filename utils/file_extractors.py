@@ -1,15 +1,25 @@
 import os
 import logging
+import torch
 from huggingface_hub import snapshot_download
 from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.table import Table
 from openpyxl import load_workbook
 from openpyxl.styles.colors import RGB
+from transformers import pipeline
 
 logger = logging.getLogger(__name__)
 
-supported_file_types = ["docx", "xlsx", "py"]
+supported_file_types = ["docx", "xlsx", "py", "mp3"]
+
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+whisper = pipeline(
+    "automatic-speech-recognition",
+    "openai/whisper-small",
+    chunk_length_s=30,
+    device=device
+)
 
 
 class FileExtractor:
@@ -98,6 +108,10 @@ class FileExtractor:
                 lines.append(row_text)
         return "\n".join(lines)
 
+    def mp3_to_text(self):
+        result = whisper(self.file_path, return_timestamps=True)
+        return result["text"]
+
     def raw_file_to_text(self):
         with open(self.file_path, mode="r", encoding="utf-8") as file:
             contents = file.read()
@@ -112,6 +126,8 @@ class FileExtractor:
                 return self.xlsx_to_text()
             case "py":
                 return self.raw_file_to_text()
+            case "mp3":
+                return self.mp3_to_text()
             case _:
                 raise Exception(
                     f"Attempted to extract from unsupported extension {extension}"
