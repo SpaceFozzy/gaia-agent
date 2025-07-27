@@ -17,3 +17,6 @@ downloaded_files
 
 # Notes
 todo.txt
+
+# MLFlow
+mlruns/

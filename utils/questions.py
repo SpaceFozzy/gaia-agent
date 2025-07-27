@@ -36,11 +36,8 @@ class QuestionProvider:
 
 
 class AnswerFileWriter:
-    def __init__(self):
-        directory = os.path.join(os.path.dirname(__file__), "../", "answers")
-        os.makedirs(directory, exist_ok=True)
-        self.answers_save_file = os.path.join(directory, "answers.json")
-
+    def __init__(self, answers_save_file):
+        self.answers_save_file = answers_save_file
         logger.info(f"Initializing answer save file at {self.answers_save_file}")
 
     def __call__(self, answer_data):

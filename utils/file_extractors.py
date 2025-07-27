@@ -18,7 +18,7 @@ whisper = pipeline(
     "automatic-speech-recognition",
     "openai/whisper-small",
     chunk_length_s=30,
-    device=device
+    device=device,
 )
 
 
