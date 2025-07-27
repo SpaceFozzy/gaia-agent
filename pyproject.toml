@@ -11,6 +11,7 @@ dependencies = [
     "langchain-anthropic>=0.3.15",
     "langchain-tavily>=0.2.3",
     "langgraph>=0.4.8",
+    "mlflow>=3.1.4",
     "openpyxl>=3.1.5",
     "pydantic>=2.11.7",
     "python-docx>=1.2.0",
