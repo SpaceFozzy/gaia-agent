@@ -33,7 +33,7 @@ def get_git_info() -> Dict[str, Union[str, bool]]:
                 .decode("utf-8")
                 .strip()
             )
-            > 0
+            > 0,
         }
     except subprocess.CalledProcessError as e:
         return {"error": f"Git command failed: {e}"}
@@ -43,9 +43,9 @@ def main():
     git_info = get_git_info()
     with mlflow.start_run():
         current_run = mlflow.active_run()
-        mlflow.log_param("commit_hash", git_info['commit_hash'])
-        mlflow.log_param("commit_short", git_info['short_hash'])
-        mlflow.log_param("uncommitted_changes", git_info['has_uncommitted_changes'])
+        mlflow.log_param("commit_hash", git_info["commit_hash"])
+        mlflow.log_param("commit_short", git_info["short_hash"])
+        mlflow.log_param("uncommitted_changes", git_info["has_uncommitted_changes"])
 
         question_provider = QuestionProvider()
         question, ground_truth = question_provider.get_question()
@@ -58,7 +58,9 @@ def main():
 
         answers_artifact_directory = os.path.join(os.path.dirname(__file__), "answers")
         os.makedirs(answers_artifact_directory, exist_ok=True)
-        answers_save_file = os.path.join(answers_artifact_directory, f"{current_run.info.run_name}.json")
+        answers_save_file = os.path.join(
+            answers_artifact_directory, f"{current_run.info.run_name}.json"
+        )
 
         submit_answer = AnswerFileWriter(answers_save_file)
         is_correct = agent_answer == ground_truth
