@@ -39,6 +39,16 @@ def get_git_info() -> Dict[str, Union[str, bool]]:
         return {"error": f"Git command failed: {e}"}
 
 
+def create_answer_result(question, ground_truth, agent_answer, error=None):
+    """Create a standardized result dictionary"""
+    return {
+        "task_id": question["task_id"],
+        "question": question["question"],
+        "agent_answer": agent_answer if error is None else f"Error: {error}",
+        "ground_truth": ground_truth,
+        "is_correct": agent_answer == ground_truth if error is None else False,
+    }
+
 def main():
     git_info = get_git_info()
     with mlflow.start_run():
@@ -47,38 +57,51 @@ def main():
         mlflow.log_param("commit_short", git_info["short_hash"])
         mlflow.log_param("uncommitted_changes", git_info["has_uncommitted_changes"])
 
-        question_provider = QuestionProvider()
-        question, ground_truth = question_provider.get_question()
-        logger.info(f"Running query for question {question["question"]}")
-        logger.info(question["file_name"])
-
-        agent = GaiaAgent(handle_message_chunk=MessageChunkPrinter())
-        agent_answer = agent(question)
-        logger.info(f"Agent answer: {agent_answer}")
-
         answers_artifact_directory = os.path.join(os.path.dirname(__file__), "answers")
         os.makedirs(answers_artifact_directory, exist_ok=True)
         answers_save_file = os.path.join(
             answers_artifact_directory, f"{current_run.info.run_name}.json"
         )
-
         submit_answer = AnswerFileWriter(answers_save_file)
-        is_correct = agent_answer == ground_truth
-        submit_answer(
-            {
-                "task_id": question["task_id"],
-                "question": question["question"],
-                "agent_answer": agent_answer,
-                "ground_truth": ground_truth,
-                "is_correct": agent_answer == ground_truth,
-            }
-        )
+
+        question_provider = QuestionProvider()
+        total_questions = question_provider.get_question_count()
+        questions, ground_truths = question_provider.get_questions()
+
         total_correct = 0
-        if is_correct:
-            total_correct += total_correct
+        total_attempted = 0
+
+        mlflow.log_metric("question_sample_size", len(questions))
+        mlflow.log_metric("dataset_question_total", total_questions)
+        for i in range(len(questions)):
+            total_attempted += 1
+            question = questions[i]
+            ground_truth = ground_truths[i]
+            logger.info(f"Running query for question {question["question"]}")
+            logger.info(question["file_name"])
+
+            agent = GaiaAgent(handle_message_chunk=MessageChunkPrinter())
+            is_correct = False
+
+            result = None
+            try:
+                agent_answer = agent(question)
+                logger.info(f"Agent answer: {agent_answer}")
+                result = create_answer_result(question, ground_truth, agent_answer)
+                if result["is_correct"] is True:
+                    total_correct += 1
+            except Exception as e:
+                result = create_answer_result(question, ground_truth, None, error=e)
+
+            submit_answer(result)
+
+            mlflow.log_metric("total_correct", total_correct)
+            percent_correct = (total_correct / total_attempted) * 100
+            mlflow.log_metric("percent_correct", percent_correct)
+            if is_correct:
+                total_correct += 1
 
         mlflow.log_artifact(answers_save_file)
-        mlflow.log_metric("total_correct", is_correct)
 
 
 if __name__ == "__main__":
