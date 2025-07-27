@@ -44,3 +44,15 @@ This project currently supports Claude Sonnet 4, using the following Claude-spec
 
 * Math tools (calculator)
 * Web search (currently via Tavily)
+
+### Document Support
+
+The agent currently supports the following [file extension types](https://github.com/SpaceFozzy/gaia-agent/blob/b5486151dbe98088eacd4f866ceeaf073069ca6c/utils/file_extractors.py#L14):
+
+* docx
+* xlsx
+* py
+* mp3
+
+Images are't supported yet but coming soon.
+
