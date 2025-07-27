@@ -22,8 +22,7 @@ class QuestionProvider:
             print(f"Level {question["Level"]} files: {question["file_name"]}")
         print(len(self.gaia))
 
-    def get_question(self):
-        question = self.gaia[1]
+    def format_question(self, question):
         # This is the question format for the Hugging Face Agents Course:
         # https://agents-course-unit4-scoring.hf.space/docs#/default/get_questions_questions_get
         formatted_question = {
@@ -33,6 +32,19 @@ class QuestionProvider:
             "Level": question["Level"],
         }
         return formatted_question, question["Final answer"]
+
+    def get_question_count(self):
+        return len(self.gaia)
+
+    def get_questions(self):
+        questions = self.gaia
+        formatted_questions = []
+        answers = []
+        for question in questions:
+            formatted_question, answer = self.format_question(question)
+            formatted_questions.append(formatted_question)
+            answers.append(answer)
+        return formatted_questions, answers
 
 
 class AnswerFileWriter:
