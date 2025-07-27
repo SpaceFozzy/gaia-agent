@@ -22,10 +22,16 @@ You will also need a Hugging Face login for access to the dataset.
 ### Running
 
 1. `uv sync`
-2. `python3 main.py`
-3. This will answer [a pre-determined question](https://github.com/SpaceFozzy/gaia-agent/blob/30f4ce7e31a9b569891de130bfaa8dca7ed50c4c/utils/questions.py#L26), printing the LLM's messages to standard out. When the agent submits its answer, it will be recorded in `/answers/answers.json`.
+3. `python3 main.py`
+4. This will answer [a pre-determined question](https://github.com/SpaceFozzy/gaia-agent/blob/30f4ce7e31a9b569891de130bfaa8dca7ed50c4c/utils/questions.py#L26), printing the LLM's messages to standard out. When the agent submits its answer, it will be recorded in `/answers/answers.json`.
 
 ## Details
+
+### MLflow
+
+`mlflow ui` will run MLFlow to track your runs and provide tracing. 
+
+<img width="1280" height="679" alt="Screenshot from 2025-07-26 21-52-07" src="https://github.com/user-attachments/assets/663b4849-aadd-4407-96e9-abb5809ee13d" />
 
 ### LLM
 
